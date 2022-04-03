@@ -17,6 +17,7 @@
 %}
 sampling_freq=;
 N_aq=;
+delta_freq=sampling_freq/N_aq;
 daq_storage= daq("ni");
 daq_storage.Rate=sampling_freq; %transfer sampling frequency to daq_storage object parameter Rate
 addinput(daq_storage,"Dev1","ai0","Voltage"); 
@@ -63,20 +64,7 @@ Kopt=((Vne-Vpk)*sin(n*peakidx)+(Une-Upk)*cos(n*peakidx))/(Une-Upk);
 Zpk=Vpk*(Kop-cos(n*peakidx)\sin(n*peakidx)) + Upk;
 Zne=Vne*(Kop-cos(n*neighboridx)\sin(n*neighboridx)) + Une;
 lambda=(1/n)*arccos((Zne*cos(n*neighboridx)-Zpk*cos(n*peakidx))\(Zne-Zpk));
-est_freq=lambda*szspctr;
-
-%{
---------------------------       
-|RMS CALCULATOR SEQUENCE |      
---------------------------      
-%}
-
-for i=1:szvec
-  tmp = aqvec(i) * aqvec (i);
-  summation = summation+tmp;
-end
-
-rms = sqrt(summation / szvec);
+est_freq=lambda*delta_freq;
 
 %{
 ------------------------------   
@@ -84,6 +72,37 @@ rms = sqrt(summation / szvec);
 ------------------------------  
 %}
 
+N_harmonics=; %see max number of harmonics%
+harmonicfreqvec(1)=peakidx;
+harmonicvec(1)=peak;
+lastharmonicfreq=peakidx;
+for i=2:N_harmonics
+	nextharmonicfreq=lastharmonicfreq+est_freq; %see cast%
+	harmonicfreqvec(i)=nextharmonicfreq;
+	harmonicvec(i)=spctrvec(nextharmonicfreq);
+	lastharmonicfreq=nextharmonicfreq;
+end	
+
+harmonicvecsize=lenght(harmonicvec);
+%{
+--------------------------       
+|RMS CALCULATOR SEQUENCE |      
+--------------------------      
+%}
+
+for i=2:harmonicvecsize
+  tmp = harmonicvec(i) * harmonicvec(i);
+  tmp=tmp/sqrt(2);
+  summation = summation+tmp;
+end
+tmp2=harmonicvec(1)*harmonicvec(1);
+rms = sqrt(tmp2+summation)
+
+%{
+--------------------------       
+|THD CALCULATOR SEQUENCE |      
+--------------------------      
+%}
 
 
 
