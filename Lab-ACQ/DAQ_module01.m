@@ -1,7 +1,7 @@
 %{
 /*-----------------------------------------------------------------------------------------------------+
-| DAQ_module01.m         |Acquired signal frequency estimator and RMS, apmain.c                        |
-|                        |                                                                             |
+| DAQ_module01.m         |Acquired signal frequency estimator and Harmonics, RMS and THD signal calcu- |
+|                        |lator                                                                        |
 |                        |                                                                             |
 +------------------------------------------------------------------------------------------------------+
 | Authors: Joao Barreiros C. Rodrigues nº99968, Francisco Simplício nº99940, Inês Castro nº99962       |
@@ -74,12 +74,12 @@ est_freq=lambda*delta_freq;
 
 N_harmonics=; %see max number of harmonics%
 harmonicfreqvec(1)=peakidx;
-harmonicvec(1)=peak;
+harmonicvoltvec(1)=peak;
 lastharmonicfreq=peakidx;
 for i=2:N_harmonics
 	nextharmonicfreq=lastharmonicfreq+est_freq; %see cast%
 	harmonicfreqvec(i)=nextharmonicfreq;
-	harmonicvec(i)=spctrvec(nextharmonicfreq);
+	harmonicvoltvec(i)=spctrvec(nextharmonicfreq);
 	lastharmonicfreq=nextharmonicfreq;
 end	
 
@@ -91,12 +91,12 @@ harmonicvecsize=lenght(harmonicvec);
 %}
 
 for i=2:harmonicvecsize
-  tmp = harmonicvec(i) * harmonicvec(i);
+  tmp = harmonicvoltvec(i) * harmonicvoltvec(i);
   tmp=tmp/sqrt(2);
   summation = summation+tmp;
 end
-tmp2=harmonicvec(1)*harmonicvec(1);
-rms = sqrt(tmp2+summation)
+tmp2=harmonicvoltvec(1)*harmonicvoltvec(1);
+rms = sqrt(tmp2+summation);
 
 %{
 --------------------------       
@@ -104,5 +104,10 @@ rms = sqrt(tmp2+summation)
 --------------------------      
 %}
 
+for i=2:harmonicvecsize
+  tmp = harmonicvoltvec(i) * harmonicvoltvec(i);
+  summation = summation+tmp;
+end
+thd = sqrt(summation)/harmonicvoltvec(1);
 
 
