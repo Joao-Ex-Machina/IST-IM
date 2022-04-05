@@ -110,4 +110,28 @@ for i=2:harmonicvecsize
 end
 thd = sqrt(summation)/harmonicvoltvec(1);
 
+%{
+--------------------------       
+|GRAPH PLOTTING SEQUENCE |      
+--------------------------      
+%}
+subplot(2,1,1);
+x1 = linspace(0,(1/delta_freq));
+xlabel('Sampler \delta time / s');
+ylabel('Sampled signal amplitude / V');
+title(sprintf('Sampled signal \n Estimated original signal frequency:', est_freq, 'Hz \n', 'THD:', thd, ' RMS:', rms '\n Number of acquisitions:', N_aq, '\n Sampler Frequency:', sampling_freq, 'Range:');
+plot(x, aqvec);
+
+for i=1:szspctr
+	tmp= (spctrvec(i)*spctrvec(i))/2;
+	powervec = 10 * log (tmp);
+	end
+
+x2=linspace(0, szspctr)
+xlabel('Frequency / Hz');
+ylabel('Logarithmic power / dBV^2');
+title(sprintf('Single-sided Logarithmic signal power');
+plot(x, aqvec);
+
+
 
