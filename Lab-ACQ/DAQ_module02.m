@@ -1,12 +1,12 @@
 %{
 /*-----------------------------------------------------------------------------------------------------+
-| DAQ_module01.m         |Acquired signal frequency estimator and Average value, RMS and signal calcu- |
-|                        |lator                                                                        |
+| DAQ_module02.m         |Acquired signal frequency estimator and Harmonics, RMS, THD, noise, SINAD and|    
+|                        |ENOB calculator                                                              |
 |                        |                                                                             |
 +------------------------------------------------------------------------------------------------------+
 | Authors: Joao Barreiros C. Rodrigues nº99968, Francisco Simplício nº99940, Inês Castro nº99962       |
 |          LEEC-IST                                                                                    |
-| Date: 03 April 2022                                                                                  |
+| Date: 05 April 2022                                                                                  |
 +-----------------------------------------------------------------------------------------------------*/
 %}
 
@@ -66,42 +66,60 @@ Zne=Vne*(Kop-cos(n*neighboridx)\sin(n*neighboridx)) + Une;
 lambda=(1/n)*arccos((Zne*cos(n*neighboridx)-Zpk*cos(n*peakidx))\(Zne-Zpk));
 est_freq=lambda*delta_freq;
 
-
 %{
---------------------------       
-|AVG CALCULATOR SEQUENCE |      
---------------------------      
+------------------------------   
+|HARMONIC CALCULATOR SEQUENCE|  
+------------------------------  
 %}
 
-Nsampoper= sampling_freq / est_freq;
-Nperiods= N_aq / Nsampoper;
-Ncperiods= floor(Nperiods);
-avg = round (Ncperiods * Nsampoper);
+N_harmonics=; %see max number of harmonics%
+harmonicfreqvec(1)=peakidx;
+harmonicvoltvec(1)=peak;
+lastharmonicfreq=peakidx;
+for i=2:N_harmonics
+	nextharmonicfreq=lastharmonicfreq+est_freq; %see cast%
+	harmonicfreqvec(i)=nextharmonicfreq;
+	harmonicvoltvec(i)=spctrvec(nextharmonicfreq);
+	lastharmonicfreq=nextharmonicfreq;
+end	
 
-
+harmonicvecsize=lenght(harmonicvec);
 %{
 --------------------------       
 |RMS CALCULATOR SEQUENCE |      
 --------------------------      
 %}
 
-for i=1:()avg-1)
-  tmp = aqvec(i) * aqvec(i);
+for i=2:harmonicvecsize
+  tmp = harmonicvoltvec(i) * harmonicvoltvec(i);
+  tmp=tmp/sqrt(2);
   summation = summation+tmp;
 end
-rms = sqrt(summation/avg);
+tmp2=harmonicvoltvec(1)*harmonicvoltvec(1);
+rms = sqrt(tmp2+summation);
 
+%{
+--------------------------       
+|THD CALCULATOR SEQUENCE |      
+--------------------------      
+%}
+
+for i=2:harmonicvecsize
+  tmp = harmonicvoltvec(i) * harmonicvoltvec(i);
+  summation = summation+tmp;
+end
+thd = sqrt(summation)/harmonicvoltvec(1);
 
 %{
 --------------------------       
 |GRAPH PLOTTING SEQUENCE |      
 --------------------------      
 %}
-subplot(2,1,N_aq);
+subplot(2,1,1);
 x1 = linspace(0,(1/delta_freq));
 xlabel('Sampler \delta time / s');
 ylabel('Sampled signal amplitude / V');
-title(sprintf('Sampled signal \n Estimated original signal frequency:', est_freq, 'Hz \n', 'Average value:', avg, ' RMS:', rms '\n Number of acquisitions:', N_aq, '\n Sampler Frequency:', sampling_freq, 'Range:');
+title(sprintf('Sampled signal \n q, 'Hz \n', 'THD:', thd, ' RMS:', rms '\n Number of acquisitions:', N_aq, '\n Sampler Frequency:', sampling_freq, 'Range:');
 plot(x, aqvec);
 
 for i=1:szspctr
@@ -113,7 +131,7 @@ x2=linspace(0, szspctr)
 xlabel('Frequency / Hz');
 ylabel('Logarithmic power / dBV^2');
 title(sprintf('Single-sided Logarithmic signal power');
-plot(x, powervec);
+plot(x, aqvec);
 
 
 
