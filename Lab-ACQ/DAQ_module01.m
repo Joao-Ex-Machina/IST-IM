@@ -78,9 +78,9 @@ Vne = imag(spctrvec(L+1));
 n=2*pi/N_aq;
 
 Kopt=((Vne-Vpk)*sin(n*peakidx)+(Une-Upk)*cos(n*peakidx))/(Une-Upk);
-Zpk=Vpk*(Kopt-cos(n*peakidx)\sin(n*peakidx)) + Upk;
-Zne=Vne*(Kopt-cos(n*neighboridx)\sin(n*neighboridx)) + Une;
-lambda=(1/n)*acos((Zne*cos(n*neighboridx)-Zpk*cos(n*peakidx))\(Zne-Zpk));
+Zpk=Vpk*(Kopt-cos(n*peakidx)/sin(n*peakidx)) + Upk;
+Zne=Vne*(Kopt-cos(n*neighboridx)/sin(n*neighboridx)) + Une;
+lambda=(1/n)*acos((Zne*cos(n*neighboridx)-Zpk*cos(n*peakidx))/(Zne-Zpk));
 est_freq=lambda*delta_freq;
 
 
@@ -132,7 +132,7 @@ x1=n/sampling_freq;
 
 plot(x1, aqvec);
 xlim([0 5/est_freq]); 
-xlabel('Sampler \delta time / s');
+xlabel('Sampler \Delta time / s');
 ylabel('Sampled signal amplitude / V');
 title(sprintf('Sampled signal \n Estimated original signal frequency: %f Hz\n Average value: %f\n  RMS: %f\n Number of acquisitions: %d\n Sampler Frequency:', est_freq, avg,rms,N_aq));
 
